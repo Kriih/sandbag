@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="currentColor" role="img" aria-label="Face Pulls en Anillas">
+  <title>Face Pulls en Anillas</title>
+  <!-- Straps angled up to anchor -->
+  <line x1="158" y1="10" x2="112" y2="74" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+  <line x1="170" y1="10" x2="126" y2="78" stroke="currentColor" stroke-width="3" opacity="0.55" stroke-linecap="round"/>
+  <!-- Rings near forehead/ears -->
+  <circle cx="110" cy="82" r="9" fill="none" stroke="currentColor" stroke-width="5"/>
+  <circle cx="124" cy="86" r="8" fill="none" stroke="currentColor" stroke-width="4" opacity="0.55"/>
+  <!-- Head -->
+  <circle cx="84" cy="76" r="12"/>
+  <!-- Straight inclined body -->
+  <path d="M90 92 L126 134 L164 178" fill="none" stroke="currentColor" stroke-width="15" stroke-linecap="round"/>
+  <!-- High elbow pulling back past head (external rotation) -->
+  <path d="M94 96 L72 78 L108 82" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Floor line -->
+  <line x1="20" y1="184" x2="184" y2="184" stroke="currentColor" stroke-width="4" opacity="0.35" stroke-linecap="round"/>
+</svg>

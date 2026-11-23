@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="currentColor" role="img" aria-label="Kettlebell Halos">
+  <title>Kettlebell Halos</title>
+  <!-- Halo orbit path around head -->
+  <ellipse cx="100" cy="46" rx="44" ry="15" fill="none" stroke="currentColor" stroke-width="3.5" stroke-dasharray="7 5" opacity="0.55"/>
+  <!-- Head -->
+  <circle cx="100" cy="48" r="13"/>
+  <!-- Kettlebell held upside down beside head -->
+  <circle cx="142" cy="44" r="11"/>
+  <path d="M135 52 C135 60, 149 60, 149 52" fill="none" stroke="currentColor" stroke-width="4"/>
+  <!-- Torso upright -->
+  <path d="M84 68 L116 68 L112 124 L88 124 Z"/>
+  <!-- Both arms raised holding kettlebell horns around head -->
+  <path d="M84 74 L68 56 L132 54" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M116 74 L138 66 L142 54" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Legs strong stance -->
+  <path d="M92 124 L84 156 L80 184" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M108 124 L116 156 L120 184" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

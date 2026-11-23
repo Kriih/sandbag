@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="currentColor" role="img" aria-label="Flexiones en Anillas">
+  <title>Flexiones en Anillas</title>
+  <!-- Straps from top -->
+  <line x1="138" y1="8" x2="138" y2="112" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+  <line x1="152" y1="8" x2="152" y2="108" stroke="currentColor" stroke-width="3" opacity="0.55" stroke-linecap="round"/>
+  <!-- Rings -->
+  <circle cx="138" cy="122" r="10" fill="none" stroke="currentColor" stroke-width="5"/>
+  <circle cx="152" cy="118" r="9" fill="none" stroke="currentColor" stroke-width="4" opacity="0.55"/>
+  <!-- Head -->
+  <circle cx="156" cy="84" r="12"/>
+  <!-- Straight plank body from shoulders to toes -->
+  <path d="M138 92 L84 118 L24 148" fill="none" stroke="currentColor" stroke-width="15" stroke-linecap="round"/>
+  <!-- Arms pressing into rings -->
+  <path d="M136 96 L124 114 L138 122" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Floor line -->
+  <line x1="14" y1="158" x2="186" y2="158" stroke="currentColor" stroke-width="4" opacity="0.35" stroke-linecap="round"/>
+</svg>

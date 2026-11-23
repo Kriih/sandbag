@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="currentColor" role="img" aria-label="Sandbag Bear Hug Carry">
+  <title>Sandbag Bear Hug Carry</title>
+  <!-- Head -->
+  <circle cx="94" cy="34" r="14"/>
+  <!-- Torso slight lean back counterbalancing bag -->
+  <path d="M78 52 L106 54 L104 114 L76 112 Z"/>
+  <!-- Large sandbag hugged at chest/midsection -->
+  <ellipse cx="122" cy="84" rx="22" ry="30" transform="rotate(-10 122 84)" opacity="0.88"/>
+  <!-- Arm wrapping tightly around bag -->
+  <path d="M92 64 L112 86 L136 82" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Walking legs stride -->
+  <path d="M84 110 L66 148 L52 182" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M98 110 L118 144 L126 182" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Ground motion hint -->
+  <path d="M44 186 L62 186 M118 186 L138 186" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+</svg>

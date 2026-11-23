@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="currentColor" role="img" aria-label="Overhead Carry">
+  <title>Overhead Carry</title>
+  <!-- Kettlebell locked overhead -->
+  <path d="M102 32 C102 24, 118 24, 118 32" fill="none" stroke="currentColor" stroke-width="4.5"/>
+  <circle cx="110" cy="19" r="11"/>
+  <!-- Vertical locked arm -->
+  <path d="M110 34 L110 74" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+  <!-- Head -->
+  <circle cx="94" cy="60" r="13"/>
+  <!-- Upright braced torso -->
+  <path d="M82 76 L114 76 L110 128 L86 128 Z"/>
+  <!-- Free arm braced out slightly for balance -->
+  <path d="M84 82 L64 108" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+  <!-- Walking stride legs -->
+  <path d="M90 126 L74 156 L62 184" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M106 126 L122 156 L130 184" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

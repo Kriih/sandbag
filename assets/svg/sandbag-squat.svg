@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="currentColor" role="img" aria-label="Sentadilla con Saco de Arena">
+  <title>Sentadilla con Saco de Arena</title>
+  <!-- Head -->
+  <circle cx="88" cy="48" r="14"/>
+  <!-- Torso upright-angled in squat -->
+  <path d="M70 66 L96 72 L86 126 L60 120 Z"/>
+  <!-- Sandbag hugged in front of chest -->
+  <ellipse cx="116" cy="94" rx="22" ry="26" transform="rotate(-14 116 94)" opacity="0.88"/>
+  <!-- Arm wrapping sandbag -->
+  <path d="M84 78 L104 100 L128 96" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Deep squat leg (hip -> knee forward -> ankle) -->
+  <path d="M72 122 L120 132 L106 180" fill="none" stroke="currentColor" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Foot flat -->
+  <path d="M98 182 L124 182" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tier List Funcional en Casa</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #0f1117;
+      --card: #171a23;
+      --tile-bg: #1c202b;
+      --tile-label-bg: rgba(15, 17, 23, 0.88);
+      --border: #2a2f3d;
+      --foreground: #f3f4f6;
+      --muted-foreground: #9ca3af;
+      --primary: #6366f1;
+      --primary-foreground: #ffffff;
+      --secondary: #222634;
+      --secondary-foreground: #e5e7eb;
+      --svg-filter: invert(0.92);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --background: #f8fafc;
+        --card: #ffffff;
+        --tile-bg: #f8fafc;
+        --tile-label-bg: rgba(255, 255, 255, 0.92);
+        --border: #e2e8f0;
+        --foreground: #0f172a;
+        --muted-foreground: #64748b;
+        --primary: #4f46e5;
+        --primary-foreground: #ffffff;
+        --secondary: #f1f5f9;
+        --secondary-foreground: #1e293b;
+        --svg-filter: invert(0.08);
+      }
+    }
+
+    :root[data-theme="light"] {
+      --background: #f8fafc;
+      --card: #ffffff;
+      --tile-bg: #f8fafc;
+      --tile-label-bg: rgba(255, 255, 255, 0.92);
+      --border: #e2e8f0;
+      --foreground: #0f172a;
+      --muted-foreground: #64748b;
+      --primary: #4f46e5;
+      --primary-foreground: #ffffff;
+      --secondary: #f1f5f9;
+      --secondary-foreground: #1e293b;
+      --svg-filter: invert(0.08);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .tier-dropzone {
+      transition: background-color 150ms ease, border-color 150ms ease;
+    }
+    .tier-dropzone.drag-over {
+      outline: 2px dashed var(--primary);
+      outline-offset: -3px;
+      background-color: color-mix(in srgb, var(--primary) 12%, transparent);
+    }
+
+    .exercise-tile {
+      transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
+    }
+    .exercise-tile:hover {
+      transform: translateY(-2px);
+    }
+    .exercise-tile.dragging {
+      opacity: 0.45;
+      transform: scale(0.95);
+    }
+    .exercise-tile.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 35%, transparent);
+    }
+
+    .exercise-img {
+      filter: var(--svg-filter);
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased min-h-screen">
+  <div class="max-w-7xl mx-auto p-5 md:p-7 space-y-5">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[var(--border)] pb-4">
+      <div>
+        <div class="flex flex-wrap items-center gap-2 mb-1">
+          <span class="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[var(--secondary)] text-[var(--secondary-foreground)] border border-[var(--border)]">
+            Funcional en Casa · Sin Máquinas
+          </span>
+          <span class="text-xs text-[var(--muted-foreground)]" id="exerciseCount">35 ejercicios</span>
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-[var(--foreground)]">Tier List de Ejercicios Funcionales</h1>
+        <p class="text-sm text-[var(--muted-foreground)] mt-1">
+          Fuerza práctica, resistencia, salud, estabilizadores y disfrute con pesa rusa, sacos de arena, rack y anillas. Arrastra los cuadrados entre tiers para personalizarla.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="btnAddToggle" class="text-xs font-medium px-3 py-2 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition cursor-pointer">
+          + Añadir ejercicio
+        </button>
+        <button id="btnCopy" class="text-xs font-medium px-3 py-2 rounded-lg bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--secondary)] transition cursor-pointer">
+          Copiar Markdown
+        </button>
+        <button id="btnTheme" class="text-xs font-medium px-3 py-2 rounded-lg bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--secondary)] transition cursor-pointer">
+          Tema
+        </button>
+        <button id="btnReset" class="text-xs font-medium px-3 py-2 rounded-lg bg-[var(--card)] text-[var(--muted-foreground)] border border-[var(--border)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)] transition cursor-pointer">
+          Restablecer
+        </button>
+      </div>
+    </header>
+
+    <!-- Add Exercise Drawer (hidden by default) -->
+    <form id="addForm" class="hidden bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 shadow-sm space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-[var(--foreground)]">Añadir ejercicio personalizado</h2>
+        <button type="button" id="btnCancelAdd" class="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer">Cerrar</button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+        <input id="inputName" type="text" required placeholder="Nombre (ej. Paseo con saco al hombro)" class="sm:col-span-5 text-sm px-3 py-2 rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none focus:border-[var(--primary)]" />
+        <select id="inputEquipment" class="sm:col-span-3 text-sm px-3 py-2 rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none focus:border-[var(--primary)]">
+          <option value="Saco de Arena">Saco de Arena</option>
+          <option value="Pesa Rusa">Pesa Rusa</option>
+          <option value="Anillas">Anillas</option>
+          <option value="Rack">Rack</option>
+          <option value="Peso Corporal">Peso Corporal</option>
+        </select>
+        <select id="inputPattern" class="sm:col-span-2 text-sm px-3 py-2 rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none focus:border-[var(--primary)]">
+          <option value="Acarreos">Acarreos</option>
+          <option value="Bisagra">Bisagra</option>
+          <option value="Empuje">Empuje</option>
+          <option value="Tracción">Tracción</option>
+          <option value="Piernas">Piernas</option>
+          <option value="Estabilidad / Core">Estabilidad / Core</option>
+        </select>
+        <select id="inputTier" class="sm:col-span-2 text-sm px-3 py-2 rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none focus:border-[var(--primary)]">
+          <option value="S">Tier S</option>
+          <option value="A">Tier A</option>
+          <option value="B" selected>Tier B</option>
+          <option value="C">Tier C</option>
+          <option value="D">Tier D</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+        <input id="inputReason" type="text" placeholder="Nota o por qué te gusta (opcional)" class="sm:col-span-6 text-sm px-3 py-2 rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none focus:border-[var(--primary)]" />
+        <input id="inputImage" type="text" placeholder="Ruta o URL de imagen SVG/PNG (opcional)" class="sm:col-span-4 text-sm px-3 py-2 rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] focus:outline-none focus:border-[var(--primary)]" />
+        <button type="submit" class="sm:col-span-2 text-xs font-semibold px-4 py-2 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition cursor-pointer">
+          Guardar
+        </button>
+      </div>
+      <div class="flex flex-wrap items-center gap-1.5 pt-1">
+        <span class="text-xs text-[var(--muted-foreground)] mr-1">Músculos:</span>
+        <div id="inputMusclesWrap" class="flex flex-wrap items-center gap-1.5"></div>
+      </div>
+    </form>
+
+    <!-- Filter Controls & Multi-Filter Bars -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-3.5 space-y-3 shadow-sm">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mr-1">Mostrar filtros:</span>
+          <button
+            id="toggleEquipmentBar"
+            type="button"
+            aria-pressed="true"
+            class="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg border transition cursor-pointer"
+          ></button>
+          <button
+            id="togglePatternBar"
+            type="button"
+            aria-pressed="true"
+            class="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg border transition cursor-pointer"
+          ></button>
+          <button
+            id="toggleMuscleBar"
+            type="button"
+            aria-pressed="true"
+            class="inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg border transition cursor-pointer"
+          ></button>
+          <button
+            id="btnClearFilters"
+            type="button"
+            class="hidden text-xs font-medium px-2.5 py-1.5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)] transition cursor-pointer"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+
+        <div class="relative w-full sm:w-60">
+          <input id="searchInput" type="search" placeholder="Buscar ejercicio o músculo..." class="w-full text-xs px-3 py-2 rounded-lg bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:border-[var(--primary)]" />
+        </div>
+      </div>
+
+      <!-- Equipment Filter Row -->
+      <div id="equipmentFilterWrap" class="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[var(--border)]">
+        <span class="text-xs font-semibold text-[var(--muted-foreground)] w-24 shrink-0">Equipamiento</span>
+        <div id="equipmentFilters" class="flex flex-wrap items-center gap-1.5 flex-1"></div>
+      </div>
+
+      <!-- Pattern Filter Row -->
+      <div id="patternFilterWrap" class="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[var(--border)]">
+        <span class="text-xs font-semibold text-[var(--muted-foreground)] w-24 shrink-0">Patrón</span>
+        <div id="patternFilters" class="flex flex-wrap items-center gap-1.5 flex-1"></div>
+      </div>
+
+      <!-- Muscle Filter Row -->
+      <div id="muscleFilterWrap" class="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[var(--border)]">
+        <span class="text-xs font-semibold text-[var(--muted-foreground)] w-24 shrink-0">Músculos</span>
+        <div id="muscleFilters" class="flex flex-wrap items-center gap-1.5 flex-1"></div>
+      </div>
+    </section>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <!-- Tier List Rows -->
+      <div id="tierContainer" class="lg:col-span-8 xl:col-span-9 space-y-2.5"></div>
+
+      <!-- Inspector / Detail Panel -->
+      <aside class="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-5 bg-[var(--card)] border border-[var(--border)] rounded-xl p-5 shadow-sm">
+        <div id="detailPanel"></div>
+      </aside>
+    </div>
+
+    <!-- Attribution Footer -->
+    <footer class="pt-2 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--muted-foreground)]">
+      <span>Ilustraciones minimalistas: <a href="https://github.com/AlexMollard/Open-Exercise-Art" target="_blank" rel="noopener noreferrer" class="underline hover:text-[var(--foreground)]">Open Exercise Art</a> (CC BY-SA 4.0) y SVGs locales para saco/anillas/pesa rusa.</span>
+      <span>Arrastra los cuadrados entre filas para reorganizar tu tier list.</span>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 px-4 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-medium shadow-lg opacity-0 pointer-events-none transition-opacity duration-200"></div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'ejercicio-tierlist-funcional-v5';
+    const THEME_KEY = 'ejercicio-tierlist-theme';
+    const UI_PREFS_KEY = 'ejercicio-tierlist-ui-prefs-v3';
+
+    const FALLBACK_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="black" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="18" r="7"/><path d="M22 30 C22 25, 42 25, 42 30 L46 46 C46 53, 18 53, 18 46 Z" fill="black"/></svg>`
+    )}`;
+
+    const TIERS = [
+      { id: 'S', label: 'S', subtitle: 'Élite', bg: '#ff6b6b', text: '#1a0505', desc: 'Máximo retorno en fuerza práctica, salud, resistencia y transferencia real.' },
+      { id: 'A', label: 'A', subtitle: 'Top', bg: '#ffa94d', text: '#1f0e00', desc: 'Pilares funcionales excelentes para casa/exterior.' },
+      { id: 'B', label: 'B', subtitle: 'Sólido', bg: '#ffd43b', text: '#1f1900', desc: 'Grandes complementos, especialistas o muy divertidos de meter en la rutina.' },
+      { id: 'C', label: 'C', subtitle: 'Meh', bg: '#69db7c', text: '#041f09', desc: 'Útiles en contextos muy puntuales, pero superados por mejores alternativas.' },
+      { id: 'D', label: 'D', subtitle: 'Evitar', bg: '#74c0fc', text: '#031729', desc: 'Poco retorno funcional o mitos de entrenamiento sin transferencia real.' }
+    ];
+
+    const EQUIPMENT_LIST = ['Todos', 'Saco de Arena', 'Pesa Rusa', 'Anillas', 'Rack', 'Peso Corporal'];
+    const PATTERN_LIST = ['Todos', 'Acarreos', 'Bisagra', 'Empuje', 'Tracción', 'Piernas', 'Estabilidad / Core'];
+    const MUSCLE_LIST = ['Todos', 'Pecho', 'Espalda', 'Hombros', 'Bíceps', 'Tríceps', 'Agarre / Antebrazos', 'Core', 'Cuádriceps', 'Glúteos / Isquios'];
+
+    const EQUIPMENT_DOT = {
+      'Saco de Arena': '#f97316',
+      'Pesa Rusa': '#ef4444',
+      'Anillas': '#3b82f6',
+      'Rack': '#a855f7',
+      'Peso Corporal': '#10b981'
+    };
+
+    const INITIAL_EXERCISES = [
+      // S Tier
+      {
+        id: 'kb-swing', name: 'Kettlebell Swings', equipment: 'Pesa Rusa', pattern: 'Bisagra', tier: 'S',
+        image: 'assets/svg/kb-swing.svg',
+        metrics: { strength: 90, health: 98, time: 98, safety: 90, access: 95, fun: 95 },
+        reason: 'Difícil encontrar algo que dé tanto en tan poco tiempo: potencia de cadera, cadena posterior blindada, agarre y acondicionamiento metabólico brutal en 10–15 minutos.',
+        tip: 'No es una sentadilla: bisagra seca de cadera, brazos como cuerdas relajadas y glúteos firmes arriba sin hiperextender la espalda.'
+      },
+      {
+        id: 'sandbag-shoulder', name: 'Sandbag to Shoulder', equipment: 'Saco de Arena', pattern: 'Acarreos', tier: 'S',
+        image: 'assets/svg/sandbag-shoulder.svg',
+        metrics: { strength: 99, health: 92, time: 96, safety: 84, access: 88, fun: 96 },
+        reason: 'La definición de fuerza práctica real: arrancar un saco muerto e inestable de 25 o 50 kg desde el suelo hasta el hombro exige piernas, espalda, agarre, explosividad y pulmones.',
+        tip: 'Pega el saco al cuerpo al subirlo al regazo, abraza firme y usa un golpe explosivo de cadera para cargarlo al hombro.'
+      },
+      {
+        id: 'sandbag-carry', name: 'Acarreo de Saco (Bear Hug)', equipment: 'Saco de Arena', pattern: 'Acarreos', tier: 'S',
+        image: 'assets/svg/sandbag-carry.svg',
+        metrics: { strength: 96, health: 96, time: 95, safety: 92, access: 90, fun: 92 },
+        reason: 'Caminar abrazando 25–50 kg construye un core de hierro, postura torácica sólida, resistencia respiratoria bajo compresión y transferencia directa a cargar objetos en la vida real.',
+        tip: 'Sube el saco al pecho/abdomen alto, aprieta glúteos y camina con pasos cortos, rápidos y controlados sin balancearte.'
+      },
+      {
+        id: 'pullups', name: 'Dominadas en Rack', equipment: 'Rack', pattern: 'Tracción', tier: 'S',
+        image: 'assets/svg/pullups.svg',
+        metrics: { strength: 95, health: 92, time: 92, safety: 88, access: 86, fun: 90 },
+        reason: 'Estándar de oro de fuerza relativa y tracción vertical: espalda completa, fuerza de agarre y salud de hombros en un solo movimiento.',
+        tip: 'Empieza deprimiendo los hombros antes de doblar los codos y baja hasta extensión controlada en cada repetición.'
+      },
+      {
+        id: 'dips', name: 'Fondos en Rack', equipment: 'Rack', pattern: 'Empuje', tier: 'S',
+        image: 'assets/svg/dips.svg',
+        metrics: { strength: 93, health: 88, time: 92, safety: 82, access: 88, fun: 90 },
+        reason: 'El gran básico de empuje con peso corporal: trabaja pecho, hombros, tríceps y cintura escapular de forma muy eficiente y natural.',
+        tip: 'Mantén los hombros deprimidos (lejos de las orejas) y baja solo hasta un rango cómodo donde no sientas tirón anterior.'
+      },
+      {
+        id: 'ring-row', name: 'Remos en Anillas', equipment: 'Anillas', pattern: 'Tracción', tier: 'S',
+        image: 'assets/svg/ring-row.svg',
+        metrics: { strength: 88, health: 96, time: 90, safety: 97, access: 96, fun: 88 },
+        reason: 'Tracción horizontal ultra saludable para escápulas y postura. Puedes regular la intensidad en 2 segundos adelantando o atrasando los pies.',
+        tip: 'Mantén el cuerpo en tabla rígida, tira llevando los codos hacia las costillas y aguanta 1 segundo arriba abriendo el pecho.'
+      },
+
+      // A Tier
+      {
+        id: 'ring-pushup', name: 'Flexiones en Anillas', equipment: 'Anillas', pattern: 'Empuje', tier: 'A',
+        image: 'assets/svg/ring-pushup.svg',
+        metrics: { strength: 88, health: 94, time: 90, safety: 92, access: 94, fun: 94 },
+        reason: 'Lleva la flexión a otro nivel: la inestabilidad de las anillas enciende estabilizadores de hombro, serrato y core en cada repetición, y respeta la rotación natural de las muñecas.',
+        tip: 'Al terminar arriba, rota ligeramente las anillas hacia afuera (RTO) para activar a tope estabilizadores y pecho.'
+      },
+      {
+        id: 'ring-dip', name: 'Fondos en Anillas', equipment: 'Anillas', pattern: 'Empuje', tier: 'A',
+        image: 'assets/svg/ring-dip.svg',
+        metrics: { strength: 94, health: 90, time: 90, safety: 78, access: 82, fun: 94 },
+        reason: 'Fuerza de empuje más control estabilizador real en 3D. Exige paciencia para construir el soporte primero, pero la transferencia es brutal.',
+        tip: 'Domina primero 30–45 segundos de soporte isométrico firme en anillas antes de bajar profundo.'
+      },
+      {
+        id: 'ring-support', name: 'Soporte Isométrico en Anillas', equipment: 'Anillas', pattern: 'Estabilidad / Core', tier: 'A',
+        image: 'assets/svg/ring-support.svg',
+        metrics: { strength: 80, health: 96, time: 88, safety: 90, access: 94, fun: 86 },
+        reason: 'Oro puro para estabilizadores profundos, tendones de codo y control escapular. Muy poco tiempo invertido para el blindaje articular que da.',
+        tip: 'Empuja hacia abajo alargando el cuello, bloquea codos y gira progresivamente las palmas hacia adelante (RTO).'
+      },
+      {
+        id: 'sandbag-squat', name: 'Sentadilla con Saco', equipment: 'Saco de Arena', pattern: 'Piernas', tier: 'A',
+        image: 'assets/svg/sandbag-squat.svg',
+        metrics: { strength: 94, health: 90, time: 92, safety: 88, access: 88, fun: 88 },
+        reason: 'Sentadilla frontal orgánica: el peso al frente obliga a la espalda alta y al abdomen a trabajar durísimo mientras piernas y glúteos hacen el empuje.',
+        tip: 'Abraza el saco bien pegado al esternón, mantén codos activos y baja controlado manteniendo toda la planta apoyada.'
+      },
+      {
+        id: 'farmers-walk', name: 'Paseo del Granjero', equipment: 'Pesa Rusa', pattern: 'Acarreos', tier: 'A',
+        image: 'assets/svg/farmers-walk.svg',
+        metrics: { strength: 92, health: 94, time: 94, safety: 96, access: 92, fun: 86 },
+        reason: 'Agarre de acero, trapecios, core anti-inclinación (especialmente a una mano tipo Suitcase Carry) y postura impecable con técnica facilísima.',
+        tip: 'Si tienes una sola pesa rusa, hazlo a una mano (Suitcase Carry): tu core lateral trabajará el doble para no inclinarte.'
+      },
+      {
+        id: 'walking-lunge', name: 'Zancadas con Peso', equipment: 'Saco de Arena', pattern: 'Piernas', tier: 'A',
+        image: 'assets/svg/walking-lunge.svg',
+        metrics: { strength: 90, health: 95, time: 92, safety: 90, access: 94, fun: 86 },
+        reason: 'Patrón locomotor real: frenar, estabilizar tobillo/rodilla/cadera en movimiento y empujar cargando un saco de 25 kg al hombro o una pesa rusa dispara piernas, resistencia, core anti-rotación y movilidad de cadera.',
+        tip: 'Alterna llevar el saco en un hombro o la pesa rusa a una mano; da pasos naturales manteniendo el ancho de cadera para no tambalearte.'
+      },
+      {
+        id: 'goblet-squat', name: 'Sentadilla Goblet', equipment: 'Pesa Rusa', pattern: 'Piernas', tier: 'A',
+        image: 'assets/svg/goblet-squat.svg',
+        metrics: { strength: 82, health: 94, time: 88, safety: 96, access: 96, fun: 85 },
+        reason: 'La sentadilla más amigable y rápida de hacer en casa. Mejora movilidad de cadera y tobillo, y sirve tanto para fuerza-resistencia como para calentar.',
+        tip: 'Sostén la pesa rusa pegada al pecho y usa los codos suavemente por dentro de las rodillas abajo para abrir la cadera.'
+      },
+      {
+        id: 'dead-hang', name: 'Colgado en Rack (Dead Hang)', equipment: 'Rack', pattern: 'Estabilidad / Core', tier: 'A',
+        image: 'assets/svg/dead-hang.svg',
+        metrics: { strength: 74, health: 98, time: 94, safety: 96, access: 96, fun: 82 },
+        reason: 'Descompresión de columna, salud de hombros y resistencia de agarre en 1–2 minutos diarios. Relación beneficio-esfuerzo imbatible.',
+        tip: 'Alterna entre colgado relajado (estiramiento suave) y colgado activo (hombros abajo y escápulas firmes).'
+      },
+      {
+        id: 'kb-clean-press', name: 'Clean & Press (Pesa Rusa)', equipment: 'Pesa Rusa', pattern: 'Empuje', tier: 'A',
+        image: 'assets/svg/kb-clean-press.svg',
+        metrics: { strength: 92, health: 90, time: 94, safety: 84, access: 86, fun: 92 },
+        reason: 'Cadena completa del suelo al cielo en un gesto: bisagra, rack firme, core tenso y empuje vertical unilateral muy transferible.',
+        tip: 'En el clean, mantén el codo pegado a las costillas para que la pesa rusa rodee el antebrazo sin golpearlo.'
+      },
+      {
+        id: 'ring-face-pull', name: 'Face Pulls en Anillas', equipment: 'Anillas', pattern: 'Tracción', tier: 'A',
+        image: 'assets/svg/ring-face-pull.svg',
+        metrics: { strength: 78, health: 99, time: 90, safety: 98, access: 96, fun: 86 },
+        reason: 'Cubre el gran punto ciego de casi cualquier rutina: deltoides posterior, manguito rotador y trapecio medio/inferior, contrarrestando todo el trabajo de empuje con las mismas anillas del árbol.',
+        tip: 'Tira hacia la frente separando las anillas y rotando externamente las manos al final (posición de doble bíceps) con pausa de 1 segundo.'
+      },
+      {
+        id: 'overhead-carry', name: 'Overhead Carry (KB / Saco)', equipment: 'Pesa Rusa', pattern: 'Acarreos', tier: 'A',
+        image: 'assets/svg/overhead-carry.svg',
+        metrics: { strength: 88, health: 96, time: 92, safety: 90, access: 90, fun: 88 },
+        reason: 'Caminar con la pesa rusa a una mano (o el saco de 25 kg) bloqueado arriba de la cabeza entrena estabilidad real del manguito rotador, serrato anterior, postura y core anti-inclinación.',
+        tip: 'Empuja el brazo hacia el cielo manteniendo el bíceps cerca de la oreja, costillas abajo y pasos cortos sin arquear la lumbar.'
+      },
+
+      // B Tier
+      {
+        id: 'turkish-getup', name: 'Levantamiento Turco (TGU)', equipment: 'Pesa Rusa', pattern: 'Estabilidad / Core', tier: 'B',
+        image: 'assets/svg/turkish-getup.svg',
+        metrics: { strength: 84, health: 95, time: 68, safety: 82, access: 76, fun: 88 },
+        reason: 'Brutal para estabilidad de hombro bajo carga, movilidad de cadera y control corporal total. Queda en B solo porque cada repetición lleva tiempo y requiere técnica limpia.',
+        tip: 'Mantén la mirada fija en la pesa rusa durante las primeras fases y muévete paso a paso sin prisa.'
+      },
+      {
+        id: 'ring-curl', name: 'Curl de Bíceps en Anillas', equipment: 'Anillas', pattern: 'Tracción', tier: 'B',
+        image: 'assets/svg/ring-curl.svg',
+        metrics: { strength: 72, health: 80, time: 78, safety: 94, access: 96, fun: 95 },
+        reason: 'No es un movimiento básico de supervivencia, pero suma trabajo directo de bíceps manteniendo el cuerpo en plancha isométrica, sin cambiar de equipo y súper divertido de meter al final.',
+        tip: 'Mantén los codos altos (no los dejes caer hacia las costillas) y lleva las manos hacia la frente controlando la bajada.'
+      },
+      {
+        id: 'skin-the-cat', name: 'Skin the Cat (Anillas)', equipment: 'Anillas', pattern: 'Estabilidad / Core', tier: 'B',
+        image: 'assets/svg/skin-the-cat.svg',
+        metrics: { strength: 80, health: 94, time: 82, safety: 74, access: 80, fun: 94 },
+        reason: 'Movilidad activa y fuerza en rangos extremos de hombro y espalda alta. Increíble para longevidad y diversión en anillas si se respeta la progresión.',
+        tip: 'Empieza con rodillas recogidas (tuck) y nunca bajes de golpe en la extensión posterior (German Hang).'
+      },
+      {
+        id: 'kb-rdl', name: 'Peso Muerto Rumano (KB)', equipment: 'Pesa Rusa', pattern: 'Bisagra', tier: 'B',
+        image: 'assets/svg/kb-rdl.svg',
+        metrics: { strength: 80, health: 90, time: 84, safety: 94, access: 94, fun: 78 },
+        reason: 'Muy bueno para estirar y fortalecer isquiotibiales con control. En casa suele quedarse ligero con una sola pesa rusa, pero a una pierna sube muchísimo el reto.',
+        tip: 'Hazlo a una pierna (Single-Leg RDL) para multiplicar el trabajo de equilibrio, tobillo y glúteo medio.'
+      },
+      {
+        id: 'bulgarian-split', name: 'Sentadilla Búlgara', equipment: 'Peso Corporal', pattern: 'Piernas', tier: 'B',
+        image: 'assets/svg/bulgarian-split.svg',
+        metrics: { strength: 90, health: 88, time: 82, safety: 90, access: 84, fun: 70 },
+        reason: 'Excelente constructor unilateral de piernas y equilibrio, pero al ser estática y exigir apoyar el pie atrás pierde algo de transferencia locomotora, comodidad de montaje y disfrute frente a las zancadas con peso.',
+        tip: 'Alinea el pie delantero con la rodilla, usa un apoyo bajo y estable atrás, y añade la pesa rusa cuando quieras más intensidad.'
+      },
+      {
+        id: 'l-sit', name: 'L-Sit (Anillas / Rack)', equipment: 'Anillas', pattern: 'Estabilidad / Core', tier: 'B',
+        image: 'assets/svg/l-sit.svg',
+        metrics: { strength: 84, health: 86, time: 86, safety: 90, access: 86, fun: 90 },
+        reason: 'Isométrico exigente de abdomen, flexores de cadera y depresión escapular. Muy compacto, medible segundo a segundo y gratificante.',
+        tip: 'Empieza en versión Tuck (rodillas al pecho) y extiende una pierna a la vez antes de estirar ambas.'
+      },
+      {
+        id: 'hanging-leg-raise', name: 'Elevación de Piernas Colgado', equipment: 'Rack', pattern: 'Estabilidad / Core', tier: 'B',
+        image: 'assets/svg/hanging-leg-raise.svg',
+        metrics: { strength: 82, health: 86, time: 84, safety: 88, access: 90, fun: 82 },
+        reason: 'Combina descompresión y agarre con trabajo fuerte de abdomen si evitas el balanceo y enrollas realmente la pelvis.',
+        tip: 'Frena por completo el balanceo abajo y piensa en llevar el pubis hacia el esternón, no solo levantar los pies.'
+      },
+      {
+        id: 'bear-crawl', name: 'Gateo del Oso (Bear Crawl)', equipment: 'Peso Corporal', pattern: 'Acarreos', tier: 'B',
+        image: 'assets/svg/bear-crawl.svg',
+        metrics: { strength: 74, health: 92, time: 86, safety: 92, access: 98, fun: 84 },
+        reason: 'Coordinación contralateral, hombros resistentes, core activo y acondicionamiento sin nada de equipo. Ideal para calentar o rematar al aire libre.',
+        tip: 'Mantén las rodillas a pocos centímetros del suelo y mueve mano derecha con pie izquierdo sin bambolear la cadera.'
+      },
+      {
+        id: 'push-up', name: 'Flexiones en el Suelo', equipment: 'Peso Corporal', pattern: 'Empuje', tier: 'B',
+        image: 'assets/svg/push-up.svg',
+        metrics: { strength: 76, health: 88, time: 88, safety: 94, access: 100, fun: 76 },
+        reason: 'Imbatibles en accesibilidad y salud escapular. Quedan en B solo porque teniendo anillas y rack ya tienes versiones mucho más estimulantes.',
+        tip: 'Controla el descenso, toca el pecho al suelo y empuja separando escápulas ligeramente arriba.'
+      },
+      {
+        id: 'kb-halo', name: 'Kettlebell Halos', equipment: 'Pesa Rusa', pattern: 'Estabilidad / Core', tier: 'B',
+        image: 'assets/svg/kb-halo.svg',
+        metrics: { strength: 64, health: 96, time: 82, safety: 96, access: 96, fun: 86 },
+        reason: 'Excelente para movilidad torácica, lubricar hombros y resistencia local manteniendo las costillas bloqueadas. Queda en B por tener un techo de fuerza bajo comparado con un press o acarreo.',
+        tip: 'Sujeta la pesa rusa por los cuernos boca abajo, gira despacio pegado a la cabeza sin mover el torso y alterna el sentido.'
+      },
+      {
+        id: 'pike-push-up', name: 'Flexiones en Pica', equipment: 'Peso Corporal', pattern: 'Empuje', tier: 'B',
+        image: 'assets/svg/pike-push-up.svg',
+        metrics: { strength: 84, health: 82, time: 84, safety: 84, access: 96, fun: 72 },
+        reason: 'Gran alternativa sin equipo para empuje vertical de hombros. Se queda en B porque la posición cabeza abajo resulta menos cómoda, menos divertida y más engorrosa de progresar que empujar una pesa rusa o saco.',
+        tip: 'No bajes en línea recta entre las manos: inclina la cabeza ligeramente hacia adelante formando un triángulo con manos y coronilla.'
+      },
+
+      // C Tier
+      {
+        id: 'lateral-raise', name: 'Elevaciones Laterales', equipment: 'Pesa Rusa', pattern: 'Empuje', tier: 'C',
+        image: 'assets/svg/lateral-raise.svg',
+        metrics: { strength: 45, health: 68, time: 52, safety: 84, access: 88, fun: 50 },
+        reason: 'Aislamiento puramente estético de deltoides lateral: muy baja transferencia práctica y poco eficiente en tiempo cuando tus hombros ya trabajan en fondos, anillas, Clean & Press y Overhead Carry.',
+        tip: 'Si las metes de vez en cuando, inclina ligeramente los brazos hacia adelante (plano escapular) y evita encoger el trapecio.'
+      },
+      {
+        id: 'plank', name: 'Plancha Abdominal Pasiva', equipment: 'Peso Corporal', pattern: 'Estabilidad / Core', tier: 'C',
+        image: 'assets/svg/plank.svg',
+        metrics: { strength: 52, health: 74, time: 58, safety: 94, access: 100, fun: 42 },
+        reason: 'Buena para principiantes, pero aguantar 3–4 minutos mirando el suelo aporta poquísimo cuando ya haces acarreos de 50 kg y soportes en anillas.',
+        tip: 'Si la haces, conviértela en plancha RKC: aprieta glúteos y jala codos hacia los pies al máximo durante 20–30 s.'
+      },
+      {
+        id: 'burpee', name: 'Burpees a Alta Velocidad', equipment: 'Peso Corporal', pattern: 'Empuje', tier: 'C',
+        image: 'assets/svg/burpee.svg',
+        metrics: { strength: 55, health: 76, time: 80, safety: 60, access: 98, fun: 52 },
+        reason: 'Suben las pulsaciones rápido, pero bajo fatiga la postura lumbar y de hombros suele degradarse. Los Kettlebell Swings o los carries acondicionan mejor y con menos desgaste.',
+        tip: 'Si te gustan, hazlos controlados (tipo Navy Seal o sin tirarte a plomo al suelo) priorizando calidad.'
+      },
+      {
+        id: 'jumping-jack', name: 'Jumping Jacks', equipment: 'Peso Corporal', pattern: 'Piernas', tier: 'C',
+        image: 'assets/svg/jumping-jack.svg',
+        metrics: { strength: 25, health: 68, time: 60, safety: 88, access: 100, fun: 50 },
+        reason: 'Sirven únicamente para entrar en calor 2 minutos; casi nulo impacto en fuerza práctica, estabilidad o resistencia real.',
+        tip: 'Úsalos solo como calentamiento ligero o sustitúyelos por gateos del oso o swings suaves.'
+      },
+
+      // D Tier
+      {
+        id: 'floor-crunch', name: 'Crunches en el Suelo', equipment: 'Peso Corporal', pattern: 'Estabilidad / Core', tier: 'D',
+        image: 'assets/svg/floor-crunch.svg',
+        metrics: { strength: 30, health: 40, time: 35, safety: 62, access: 100, fun: 30 },
+        reason: 'Cientos de repeticiones tirando del cuello dan mala transferencia funcional y muy poca fuerza real frente a acarreos, anillas o L-sit.',
+        tip: 'Cambia ese tiempo por 2 minutos de Bear Hug Carry, soporte en anillas o elevaciones colgado.'
+      },
+      {
+        id: 'standing-twists', name: 'Rotaciones con Bastón', equipment: 'Peso Corporal', pattern: 'Estabilidad / Core', tier: 'D',
+        image: 'assets/svg/standing-twists.svg',
+        metrics: { strength: 15, health: 38, time: 30, safety: 80, access: 96, fun: 35 },
+        reason: 'Sin resistencia lateral real, girar con un palo apenas mueve la columna por inercia sin fortalecer oblicuos ni core anti-rotacional.',
+        tip: 'Para oblicuos funcionales, haz Suitcase Carry con la pesa rusa a una mano o cargadas al hombro con saco.'
+      },
+      {
+        id: 'bosu-squat', name: 'Sentadilla sobre Bosu', equipment: 'Peso Corporal', pattern: 'Piernas', tier: 'D',
+        image: 'assets/svg/bosu-squat.svg',
+        metrics: { strength: 22, health: 36, time: 28, safety: 48, access: 50, fun: 40 },
+        reason: 'El clásico mito del "entrenamiento funcional": la inestabilidad artificial bajo los pies destruye la fuerza sin mejorar la estabilidad real. Inestabilidad arriba (anillas o saco) sí funciona; bajo los pies no.',
+        tip: 'Entrena estabilidad real de tren inferior con sentadilla búlgara o peso muerto a una pierna en suelo firme.'
+      }
+    ];
+
+    const DEFAULT_MUSCLES = {
+      'kb-swing': ['Glúteos / Isquios', 'Espalda', 'Core', 'Agarre / Antebrazos'],
+      'sandbag-shoulder': ['Glúteos / Isquios', 'Cuádriceps', 'Espalda', 'Core', 'Agarre / Antebrazos', 'Bíceps'],
+      'sandbag-carry': ['Core', 'Espalda', 'Agarre / Antebrazos', 'Bíceps'],
+      'pullups': ['Espalda', 'Bíceps', 'Agarre / Antebrazos'],
+      'dips': ['Pecho', 'Tríceps', 'Hombros'],
+      'ring-row': ['Espalda', 'Bíceps', 'Core'],
+      'ring-pushup': ['Pecho', 'Hombros', 'Tríceps', 'Core'],
+      'ring-dip': ['Pecho', 'Tríceps', 'Hombros', 'Core'],
+      'ring-support': ['Hombros', 'Tríceps', 'Pecho', 'Core'],
+      'sandbag-squat': ['Cuádriceps', 'Glúteos / Isquios', 'Espalda', 'Core'],
+      'farmers-walk': ['Agarre / Antebrazos', 'Espalda', 'Core'],
+      'walking-lunge': ['Cuádriceps', 'Glúteos / Isquios', 'Core'],
+      'goblet-squat': ['Cuádriceps', 'Glúteos / Isquios', 'Core'],
+      'dead-hang': ['Agarre / Antebrazos', 'Espalda', 'Hombros'],
+      'kb-clean-press': ['Hombros', 'Tríceps', 'Core', 'Glúteos / Isquios'],
+      'ring-face-pull': ['Hombros', 'Espalda'],
+      'overhead-carry': ['Hombros', 'Core', 'Espalda'],
+      'turkish-getup': ['Hombros', 'Core', 'Glúteos / Isquios'],
+      'ring-curl': ['Bíceps', 'Core', 'Agarre / Antebrazos'],
+      'skin-the-cat': ['Hombros', 'Espalda', 'Core'],
+      'kb-rdl': ['Glúteos / Isquios', 'Espalda', 'Agarre / Antebrazos'],
+      'bulgarian-split': ['Cuádriceps', 'Glúteos / Isquios', 'Core'],
+      'l-sit': ['Core', 'Tríceps', 'Hombros'],
+      'hanging-leg-raise': ['Core', 'Agarre / Antebrazos'],
+      'bear-crawl': ['Hombros', 'Core', 'Cuádriceps'],
+      'push-up': ['Pecho', 'Tríceps', 'Hombros', 'Core'],
+      'kb-halo': ['Hombros', 'Core'],
+      'pike-push-up': ['Hombros', 'Tríceps'],
+      'lateral-raise': ['Hombros'],
+      'plank': ['Core'],
+      'burpee': ['Pecho', 'Cuádriceps', 'Hombros', 'Core'],
+      'jumping-jack': ['Cuádriceps', 'Hombros'],
+      'floor-crunch': ['Core'],
+      'standing-twists': ['Core'],
+      'bosu-squat': ['Cuádriceps', 'Glúteos / Isquios']
+    };
+
+    INITIAL_EXERCISES.forEach(ex => {
+      ex.muscles = DEFAULT_MUSCLES[ex.id] || ['Core'];
+    });
+
+    const DEFAULT_IMAGES = Object.fromEntries(INITIAL_EXERCISES.map(e => [e.id, e.image]));
+
+    function getExerciseImage(ex) {
+      return ex.image || DEFAULT_IMAGES[ex.id] || FALLBACK_SVG;
+    }
+
+    function isLocalSvg(src) {
+      return !src || src.startsWith('assets/svg/') || src.startsWith('data:image/svg+xml');
+    }
+
+    function loadExercises() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.map(ex => ({
+              ...ex,
+              image: ex.image || DEFAULT_IMAGES[ex.id] || '',
+              muscles: Array.isArray(ex.muscles) && ex.muscles.length > 0 ? ex.muscles : (DEFAULT_MUSCLES[ex.id] || ['Core'])
+            }));
+          }
+        }
+      } catch {}
+      return structuredClone(INITIAL_EXERCISES);
+    }
+
+    function saveExercises() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(exercises));
+      } catch {}
+    }
+
+    function loadUiPrefs() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(UI_PREFS_KEY) || '{}');
+        return {
+          showEquipment: saved.showEquipment !== undefined ? !!saved.showEquipment : true,
+          showPattern: saved.showPattern !== undefined ? !!saved.showPattern : true,
+          showMuscles: saved.showMuscles !== undefined ? !!saved.showMuscles : true
+        };
+      } catch {
+        return { showEquipment: true, showPattern: true, showMuscles: true };
+      }
+    }
+
+    function saveUiPrefs() {
+      try {
+        localStorage.setItem(UI_PREFS_KEY, JSON.stringify({ showEquipment, showPattern, showMuscles }));
+      } catch {}
+    }
+
+    function applySavedTheme() {
+      try {
+        const saved = localStorage.getItem(THEME_KEY);
+        if (saved === 'light' || saved === 'dark') {
+          document.documentElement.setAttribute('data-theme', saved);
+        }
+      } catch {}
+    }
+
+    applySavedTheme();
+
+    let exercises = loadExercises();
+    let { showEquipment, showPattern, showMuscles } = loadUiPrefs();
+    let activeEquipment = 'Todos';
+    let activePattern = 'Todos';
+    let activeMuscle = 'Todos';
+    let searchQuery = '';
+    let selectedId = exercises[0].id;
+    let draggedId = null;
+
+    const tierContainer = document.getElementById('tierContainer');
+    const detailPanel = document.getElementById('detailPanel');
+    const equipmentFilters = document.getElementById('equipmentFilters');
+    const patternFilters = document.getElementById('patternFilters');
+    const muscleFilters = document.getElementById('muscleFilters');
+    const equipmentFilterWrap = document.getElementById('equipmentFilterWrap');
+    const patternFilterWrap = document.getElementById('patternFilterWrap');
+    const muscleFilterWrap = document.getElementById('muscleFilterWrap');
+    const toggleEquipmentBar = document.getElementById('toggleEquipmentBar');
+    const togglePatternBar = document.getElementById('togglePatternBar');
+    const toggleMuscleBar = document.getElementById('toggleMuscleBar');
+    const inputMusclesWrap = document.getElementById('inputMusclesWrap');
+    const btnClearFilters = document.getElementById('btnClearFilters');
+    const searchInput = document.getElementById('searchInput');
+    const exerciseCount = document.getElementById('exerciseCount');
+    const toast = document.getElementById('toast');
+
+    // Render muscle checkboxes inside Add Form
+    inputMusclesWrap.innerHTML = MUSCLE_LIST.filter(m => m !== 'Todos').map(m => `
+      <label class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-[var(--background)] border border-[var(--border)] cursor-pointer select-none hover:border-[var(--primary)]">
+        <input type="checkbox" name="customMuscles" value="${m}" class="accent-[var(--primary)]" />
+        <span>${m}</span>
+      </label>
+    `).join('');
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[ch]);
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+      }, 2200);
+    }
+
+    function matchesMuscle(ex, muscle) {
+      if (muscle === 'Todos') return true;
+      return Array.isArray(ex.muscles) && ex.muscles.includes(muscle);
+    }
+
+    function getFilteredExercises() {
+      return exercises.filter(ex => {
+        const matchEquipment = activeEquipment === 'Todos' || ex.equipment === activeEquipment;
+        const matchPattern = activePattern === 'Todos' || ex.pattern === activePattern;
+        const matchMuscle = matchesMuscle(ex, activeMuscle);
+        const q = searchQuery.trim().toLowerCase();
+        const matchSearch = !q ||
+          ex.name.toLowerCase().includes(q) ||
+          ex.equipment.toLowerCase().includes(q) ||
+          ex.pattern.toLowerCase().includes(q) ||
+          (Array.isArray(ex.muscles) && ex.muscles.some(m => m.toLowerCase().includes(q)));
+        return matchEquipment && matchPattern && matchMuscle && matchSearch;
+      });
+    }
+
+    function renderFilterToggles() {
+      const renderToggleBtn = (btn, label, isOpen, activeVal) => {
+        btn.setAttribute('aria-pressed', String(isOpen));
+        btn.className = `inline-flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg border transition cursor-pointer ${
+          isOpen
+            ? 'bg-[var(--secondary)] text-[var(--foreground)] border-[var(--primary)]'
+            : 'bg-[var(--background)] text-[var(--muted-foreground)] border-[var(--border)] hover:text-[var(--foreground)]'
+        }`;
+        const activeBadge = activeVal !== 'Todos'
+          ? `<span class="px-1.5 py-0.5 rounded bg-[var(--primary)] text-[var(--primary-foreground)] text-[10px] leading-none">${escapeHtml(activeVal)}</span>`
+          : '';
+        btn.innerHTML = `
+          <span class="w-2 h-2 rounded-full ${isOpen ? 'bg-[var(--primary)]' : 'bg-[var(--muted-foreground)] opacity-40'}"></span>
+          <span>${label}</span>
+          ${activeBadge}
+        `;
+      };
+
+      renderToggleBtn(toggleEquipmentBar, 'Equipamiento', showEquipment, activeEquipment);
+      renderToggleBtn(togglePatternBar, 'Patrón funcional', showPattern, activePattern);
+      renderToggleBtn(toggleMuscleBar, 'Músculos', showMuscles, activeMuscle);
+
+      equipmentFilterWrap.classList.toggle('hidden', !showEquipment);
+      patternFilterWrap.classList.toggle('hidden', !showPattern);
+      muscleFilterWrap.classList.toggle('hidden', !showMuscles);
+
+      const hasAnyFilter = activeEquipment !== 'Todos' || activePattern !== 'Todos' || activeMuscle !== 'Todos' || searchQuery.trim() !== '';
+      btnClearFilters.classList.toggle('hidden', !hasAnyFilter);
+    }
+
+    function renderFilters() {
+      renderFilterToggles();
+
+      // Equipment pills
+      equipmentFilters.innerHTML = EQUIPMENT_LIST.map(eq => {
+        const count = exercises.filter(e =>
+          (eq === 'Todos' || e.equipment === eq) &&
+          (activePattern === 'Todos' || e.pattern === activePattern) &&
+          matchesMuscle(e, activeMuscle)
+        ).length;
+        const isActive = activeEquipment === eq;
+        const dot = eq !== 'Todos'
+          ? `<span class="w-2 h-2 rounded-full inline-block" style="background:${EQUIPMENT_DOT[eq]}"></span>`
+          : '';
+        return `
+          <button
+            data-equipment="${eq}"
+            class="eq-filter-btn inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition cursor-pointer ${
+              isActive
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent'
+                : 'bg-[var(--background)] text-[var(--foreground)] border-[var(--border)] hover:bg-[var(--secondary)]'
+            }"
+          >
+            ${dot}
+            <span>${eq}</span>
+            <span class="opacity-70">${count}</span>
+          </button>
+        `;
+      }).join('');
+
+      equipmentFilters.querySelectorAll('.eq-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeEquipment = btn.dataset.equipment;
+          renderAll();
+        });
+      });
+
+      // Pattern pills
+      patternFilters.innerHTML = PATTERN_LIST.map(pat => {
+        const count = exercises.filter(e =>
+          (pat === 'Todos' || e.pattern === pat) &&
+          (activeEquipment === 'Todos' || e.equipment === activeEquipment) &&
+          matchesMuscle(e, activeMuscle)
+        ).length;
+        const isActive = activePattern === pat;
+        return `
+          <button
+            data-pattern="${pat}"
+            class="pat-filter-btn inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition cursor-pointer ${
+              isActive
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent'
+                : 'bg-[var(--background)] text-[var(--foreground)] border-[var(--border)] hover:bg-[var(--secondary)]'
+            }"
+          >
+            <span>${pat}</span>
+            <span class="opacity-70">${count}</span>
+          </button>
+        `;
+      }).join('');
+
+      patternFilters.querySelectorAll('.pat-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activePattern = btn.dataset.pattern;
+          renderAll();
+        });
+      });
+
+      // Muscle pills
+      muscleFilters.innerHTML = MUSCLE_LIST.map(mus => {
+        const count = exercises.filter(e =>
+          matchesMuscle(e, mus) &&
+          (activeEquipment === 'Todos' || e.equipment === activeEquipment) &&
+          (activePattern === 'Todos' || e.pattern === activePattern)
+        ).length;
+        const isActive = activeMuscle === mus;
+        return `
+          <button
+            data-muscle="${mus}"
+            class="mus-filter-btn inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition cursor-pointer ${
+              isActive
+                ? 'bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent'
+                : 'bg-[var(--background)] text-[var(--foreground)] border-[var(--border)] hover:bg-[var(--secondary)]'
+            }"
+          >
+            <span>${mus}</span>
+            <span class="opacity-70">${count}</span>
+          </button>
+        `;
+      }).join('');
+
+      muscleFilters.querySelectorAll('.mus-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeMuscle = btn.dataset.muscle;
+          renderAll();
+        });
+      });
+    }
+
+    function renderTiers() {
+      const filtered = getFilteredExercises();
+      exerciseCount.textContent = `${filtered.length} de ${exercises.length} ejercicios`;
+
+      tierContainer.innerHTML = TIERS.map(tier => {
+        const items = filtered.filter(e => e.tier === tier.id);
+        return `
+          <div class="flex rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--card)] shadow-sm">
+            <div
+              class="w-16 sm:w-20 shrink-0 flex flex-col items-center justify-center p-2 select-none"
+              style="background:${tier.bg}; color:${tier.text};"
+              title="${tier.desc}"
+            >
+              <span class="text-2xl font-black leading-none">${tier.label}</span>
+              <span class="text-xs font-semibold opacity-80 mt-0.5">${tier.subtitle}</span>
+            </div>
+            <div
+              class="tier-dropzone flex-1 min-h-[124px] p-2.5 flex flex-wrap content-start gap-2.5"
+              data-tier="${tier.id}"
+            >
+              ${items.length === 0
+                ? `<span class="text-xs text-[var(--muted-foreground)] self-center px-2 italic">Sin ejercicios en este tier con el filtro actual</span>`
+                : items.map(ex => {
+                    const imgSrc = getExerciseImage(ex);
+                    const imgClass = isLocalSvg(imgSrc) ? 'exercise-img' : '';
+                    const dotColor = EQUIPMENT_DOT[ex.equipment] || '#888888';
+                    return `
+                      <button
+                        type="button"
+                        draggable="true"
+                        data-id="${ex.id}"
+                        title="${escapeHtml(ex.name)} · ${ex.equipment} · ${ex.pattern}"
+                        class="exercise-tile relative w-[104px] h-[104px] sm:w-[116px] sm:h-[116px] rounded-xl overflow-hidden bg-[var(--tile-bg)] border border-[var(--border)] hover:border-[var(--primary)] flex flex-col cursor-grab active:cursor-grabbing text-center ${ex.id === selectedId ? 'selected' : ''}"
+                      >
+                        <span
+                          class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full z-10"
+                          style="background:${dotColor}"
+                        ></span>
+                        <div
+                          class="flex-1 w-full min-h-0 flex items-center justify-center p-2 pb-1"
+                          style="background: color-mix(in srgb, ${dotColor} 10%, var(--tile-bg));"
+                        >
+                          <img
+                            src="${escapeHtml(imgSrc)}"
+                            alt="${escapeHtml(ex.name)}"
+                            loading="lazy"
+                            onerror="this.onerror=null;this.src='${FALLBACK_SVG}';this.classList.add('exercise-img');"
+                            class="w-full h-full object-contain ${imgClass}"
+                          />
+                        </div>
+                        <div
+                          class="w-full px-1.5 py-1 border-t border-[var(--border)] shrink-0"
+                          style="background: var(--tile-label-bg);"
+                        >
+                          <span class="block text-[11px] font-semibold leading-tight text-[var(--foreground)] line-clamp-2">
+                            ${escapeHtml(ex.name)}
+                          </span>
+                        </div>
+                      </button>
+                    `;
+                  }).join('')
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      tierContainer.querySelectorAll('.exercise-tile').forEach(tile => {
+        tile.addEventListener('click', () => {
+          selectedId = tile.dataset.id;
+          renderTiers();
+          renderDetail();
+        });
+
+        tile.addEventListener('dragstart', e => {
+          draggedId = tile.dataset.id;
+          tile.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', draggedId);
+        });
+
+        tile.addEventListener('dragend', () => {
+          tile.classList.remove('dragging');
+          tierContainer.querySelectorAll('.tier-dropzone').forEach(z => z.classList.remove('drag-over'));
+        });
+      });
+
+      tierContainer.querySelectorAll('.tier-dropzone').forEach(zone => {
+        zone.addEventListener('dragover', e => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          zone.classList.add('drag-over');
+        });
+        zone.addEventListener('dragleave', () => {
+          zone.classList.remove('drag-over');
+        });
+        zone.addEventListener('drop', e => {
+          e.preventDefault();
+          zone.classList.remove('drag-over');
+          const id = e.dataTransfer.getData('text/plain') || draggedId;
+          const targetTier = zone.dataset.tier;
+          const item = exercises.find(ex => ex.id === id);
+          if (item && item.tier !== targetTier) {
+            item.tier = targetTier;
+            selectedId = item.id;
+            saveExercises();
+            renderTiers();
+            renderDetail();
+            showToast(`"${item.name}" movido a Tier ${targetTier}`);
+          }
+        });
+      });
+    }
+
+    function renderBar(label, value) {
+      return `
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs">
+            <span class="text-[var(--muted-foreground)]">${label}</span>
+            <span class="font-semibold text-[var(--foreground)]">${value}/100</span>
+          </div>
+          <div class="h-1.5 w-full rounded-full bg-[var(--secondary)] overflow-hidden">
+            <div class="h-full rounded-full bg-[var(--primary)] transition-all duration-300" style="width:${value}%"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDetail() {
+      const ex = exercises.find(e => e.id === selectedId) || exercises[0];
+      if (!ex) return;
+      const tierObj = TIERS.find(t => t.id === ex.tier);
+      const imgSrc = getExerciseImage(ex);
+      const imgClass = isLocalSvg(imgSrc) ? 'exercise-img' : '';
+      const dotColor = EQUIPMENT_DOT[ex.equipment] || '#888888';
+      const m = ex.metrics || { strength: 75, health: 75, time: 75, safety: 75, access: 75, fun: 75 };
+
+      detailPanel.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+                <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)]">
+                  <span class="w-2 h-2 rounded-full" style="background:${dotColor}"></span>
+                  ${escapeHtml(ex.equipment)}
+                </span>
+                <span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)]">
+                  ${escapeHtml(ex.pattern)}
+                </span>
+              </div>
+              <h2 class="text-lg font-bold text-[var(--foreground)] leading-snug">${escapeHtml(ex.name)}</h2>
+            </div>
+            <div
+              class="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-lg font-black shadow-sm"
+              style="background:${tierObj.bg}; color:${tierObj.text};"
+            >
+              ${tierObj.label}
+            </div>
+          </div>
+
+          <!-- Illustration Preview -->
+          <div
+            class="w-full h-36 rounded-xl border border-[var(--border)] flex items-center justify-center p-4"
+            style="background: color-mix(in srgb, ${dotColor} 10%, var(--tile-bg));"
+          >
+            <img
+              src="${escapeHtml(imgSrc)}"
+              alt="${escapeHtml(ex.name)}"
+              onerror="this.onerror=null;this.src='${FALLBACK_SVG}';this.classList.add('exercise-img');"
+              class="max-w-full max-h-full object-contain ${imgClass}"
+            />
+          </div>
+
+          <div class="space-y-1.5">
+            <span class="text-xs font-medium text-[var(--muted-foreground)]">Cambiar de Tier:</span>
+            <div class="grid grid-cols-5 gap-1.5">
+              ${TIERS.map(t => `
+                <button
+                  data-move-tier="${t.id}"
+                  class="move-tier-btn text-xs font-bold py-1.5 rounded-md border transition cursor-pointer ${
+                    t.id === ex.tier
+                      ? 'border-transparent shadow-sm scale-[1.02]'
+                      : 'bg-[var(--background)] text-[var(--muted-foreground)] border-[var(--border)] hover:text-[var(--foreground)]'
+                  }"
+                  style="${t.id === ex.tier ? `background:${t.bg}; color:${t.text};` : ''}"
+                >
+                  ${t.label}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="border-t border-[var(--border)] pt-3 space-y-2">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Músculos principales</h3>
+            <div class="flex flex-wrap gap-1.5">
+              ${(ex.muscles || []).map(mus => `
+                <button
+                  type="button"
+                  data-quick-muscle="${escapeHtml(mus)}"
+                  class="quick-muscle-btn text-[11px] font-medium px-2 py-0.5 rounded-full border transition cursor-pointer ${
+                    activeMuscle === mus
+                      ? 'bg-[var(--primary)] text-[var(--primary-foreground)] border-transparent'
+                      : 'bg-[var(--background)] text-[var(--foreground)] border-[var(--border)] hover:border-[var(--primary)]'
+                  }"
+                >
+                  ${escapeHtml(mus)}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="border-t border-[var(--border)] pt-3 space-y-1.5">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">Por qué está en Tier ${ex.tier}</h3>
+            <p class="text-sm text-[var(--foreground)] leading-relaxed">${escapeHtml(ex.reason)}</p>
+          </div>
+
+          <div class="space-y-2 pt-1">
+            ${renderBar('Fuerza práctica', m.strength)}
+            ${renderBar('Salud y resistencia', m.health)}
+            ${renderBar('Eficiencia de tiempo', m.time)}
+            ${renderBar('Seguridad', m.safety)}
+            ${renderBar('Accesibilidad', m.access)}
+            ${renderBar('Diversión', m.fun)}
+          </div>
+
+          <div class="rounded-lg bg-[var(--secondary)] border border-[var(--border)] p-3 space-y-1">
+            <h3 class="text-xs font-semibold text-[var(--foreground)]">Tip práctico</h3>
+            <p class="text-xs text-[var(--muted-foreground)] leading-relaxed">${escapeHtml(ex.tip)}</p>
+          </div>
+        </div>
+      `;
+
+      detailPanel.querySelectorAll('.quick-muscle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const mus = btn.dataset.quickMuscle;
+          activeMuscle = activeMuscle === mus ? 'Todos' : mus;
+          renderAll();
+        });
+      });
+
+      detailPanel.querySelectorAll('.move-tier-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const newTier = btn.dataset.moveTier;
+          if (ex.tier !== newTier) {
+            ex.tier = newTier;
+            saveExercises();
+            renderTiers();
+            renderDetail();
+            showToast(`"${ex.name}" movido a Tier ${newTier}`);
+          }
+        });
+      });
+    }
+
+    function renderAll() {
+      renderFilters();
+      renderTiers();
+      renderDetail();
+    }
+
+    // Filter bar toggles
+    toggleEquipmentBar.addEventListener('click', () => {
+      showEquipment = !showEquipment;
+      saveUiPrefs();
+      renderFilterToggles();
+    });
+
+    togglePatternBar.addEventListener('click', () => {
+      showPattern = !showPattern;
+      saveUiPrefs();
+      renderFilterToggles();
+    });
+
+    toggleMuscleBar.addEventListener('click', () => {
+      showMuscles = !showMuscles;
+      saveUiPrefs();
+      renderFilterToggles();
+    });
+
+    btnClearFilters.addEventListener('click', () => {
+      activeEquipment = 'Todos';
+      activePattern = 'Todos';
+      activeMuscle = 'Todos';
+      searchQuery = '';
+      searchInput.value = '';
+      renderAll();
+    });
+
+    // Search
+    searchInput.addEventListener('input', e => {
+      searchQuery = e.target.value;
+      renderFilterToggles();
+      renderTiers();
+    });
+
+    // Theme toggle
+    document.getElementById('btnTheme').addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+      const isCurrentlyLight = current ? current === 'light' : prefersLight;
+      const next = isCurrentlyLight ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem(THEME_KEY, next); } catch {}
+      showToast(`Tema ${next === 'light' ? 'claro' : 'oscuro'} activado`);
+    });
+
+    // Add exercise form
+    const addForm = document.getElementById('addForm');
+    document.getElementById('btnAddToggle').addEventListener('click', () => {
+      addForm.classList.toggle('hidden');
+      if (!addForm.classList.contains('hidden')) {
+        document.getElementById('inputName').focus();
+      }
+    });
+    document.getElementById('btnCancelAdd').addEventListener('click', () => {
+      addForm.classList.add('hidden');
+    });
+    addForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('inputName').value.trim();
+      if (!name) return;
+      const equipment = document.getElementById('inputEquipment').value;
+      const pattern = document.getElementById('inputPattern').value;
+      const tier = document.getElementById('inputTier').value;
+      const reason = document.getElementById('inputReason').value.trim() || 'Ejercicio personalizado añadido por el usuario.';
+      const image = document.getElementById('inputImage').value.trim();
+      const selectedMuscles = Array.from(addForm.querySelectorAll('input[name="customMuscles"]:checked')).map(i => i.value);
+      const scoreMap = { S: 92, A: 85, B: 76, C: 60, D: 35 };
+      const base = scoreMap[tier] || 75;
+      const newEx = {
+        id: 'custom-' + Date.now(),
+        name,
+        equipment,
+        pattern,
+        muscles: selectedMuscles.length > 0 ? selectedMuscles : ['Core'],
+        tier,
+        image,
+        metrics: { strength: base, health: base, time: base, safety: base, access: 90, fun: 85 },
+        reason,
+        tip: 'Prioriza buena postura, respiración firme y progresión sostenible en casa.'
+      };
+      exercises.push(newEx);
+      selectedId = newEx.id;
+      saveExercises();
+      addForm.reset();
+      addForm.classList.add('hidden');
+      renderAll();
+      showToast(`"${name}" añadido a Tier ${tier}`);
+    });
+
+    // Reset
+    document.getElementById('btnReset').addEventListener('click', () => {
+      exercises = structuredClone(INITIAL_EXERCISES);
+      activeEquipment = 'Todos';
+      activePattern = 'Todos';
+      activeMuscle = 'Todos';
+      searchQuery = '';
+      searchInput.value = '';
+      selectedId = exercises[0].id;
+      try { localStorage.removeItem(STORAGE_KEY); } catch {}
+      renderAll();
+      showToast('Tier list restablecida');
+    });
+
+    // Copy Markdown
+    document.getElementById('btnCopy').addEventListener('click', async () => {
+      const md = TIERS.map(t => {
+        const list = exercises.filter(e => e.tier === t.id).map(e => `${e.name} (${e.equipment} · ${e.pattern})`).join(', ');
+        return `**Tier ${t.label} (${t.subtitle})**: ${list || '—'}`;
+      }).join('\n');
+      try {
+        await navigator.clipboard.writeText(md);
+        showToast('Copiado al portapapeles en formato Markdown');
+      } catch {
+        showToast('No se pudo copiar automáticamente');
+      }
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>

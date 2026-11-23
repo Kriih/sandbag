@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="currentColor" role="img" aria-label="Sandbag to Shoulder">
+  <title>Sandbag to Shoulder</title>
+  <!-- Head -->
+  <circle cx="96" cy="36" r="14"/>
+  <!-- Heavy sandbag resting over right shoulder -->
+  <path d="M52 44 C46 32, 66 22, 82 32 C94 40, 102 54, 92 68 C82 80, 56 76, 48 64 C44 58, 46 50, 52 44 Z" opacity="0.88"/>
+  <!-- Torso -->
+  <path d="M84 56 L114 58 L112 114 L82 114 Z"/>
+  <!-- Left arm stabilizing sandbag on shoulder -->
+  <path d="M110 62 L126 78 L100 58" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Right arm wrapping under sandbag -->
+  <path d="M86 64 L66 78 L72 60" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Legs strong stance -->
+  <path d="M88 112 L74 152 L68 184" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M106 112 L122 152 L128 184" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Feet -->
+  <path d="M58 186 L76 186 M120 186 L138 186" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+</svg>

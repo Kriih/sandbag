@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="currentColor" role="img" aria-label="Paseo del Granjero">
+  <title>Paseo del Granjero</title>
+  <!-- Head -->
+  <circle cx="100" cy="30" r="14"/>
+  <!-- Upright torso -->
+  <path d="M84 48 L116 48 L112 108 L88 108 Z"/>
+  <!-- Straight arms holding kettlebells down -->
+  <path d="M82 54 L66 112" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round"/>
+  <path d="M118 54 L134 112" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round"/>
+  <!-- Left Kettlebell -->
+  <path d="M58 114 C58 106, 74 106, 74 114" fill="none" stroke="currentColor" stroke-width="4.5"/>
+  <circle cx="66" cy="128" r="13"/>
+  <!-- Right Kettlebell -->
+  <path d="M126 114 C126 106, 142 106, 142 114" fill="none" stroke="currentColor" stroke-width="4.5"/>
+  <circle cx="134" cy="128" r="13"/>
+  <!-- Walking legs -->
+  <path d="M92 108 L84 148 L76 184" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M108 108 L116 148 L124 184" fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
